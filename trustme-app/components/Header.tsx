@@ -8,12 +8,15 @@ const Header = () => {
           TrustMe
         </Link>
         <nav className="space-x-4">
-          <Link href="/blog" className="text-white hover:text-teal-200">
+          <Link 
+            href="/blog" 
+            className="text-teal-600 bg-white px-3 py-1 rounded-md font-medium hover:bg-gray-100"
+          >
             News Blog
           </Link>
           <Link
             href="/fact-check"
-            className="text-teal-600 bg-white px-3 py-1 rounded-md font-medium hover:bg-gray-100"
+            className="text-white hover:text-teal-200"
           >
             Fact Check
           </Link>
