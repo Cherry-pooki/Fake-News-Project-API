@@ -1,4 +1,5 @@
-import React from "react";
+"use client";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -14,41 +15,110 @@ interface BlogPost {
 const DUMMY_POSTS: BlogPost[] = [
   {
     id: 1,
-    headline: "Climate Experts Confirm Global Temperature Records",
+    headline: "XXXXXXXXX",
     category: "General",
     verdict: "Verified True",
     content:
-      "According to NASA and NOAA data, global temperatures have consistently reached record highs over the past five years. Scientists attribute this to human-caused greenhouse gas emissions. The report calls for urgent global action to meet climate targets and reduce fossil fuel dependency.",
+      "This article explains how verified information is fact-checked and confirmed through reliable sources.",
     image: "/globe.svg",
   },
   {
     id: 2,
-    headline: "Political Leader Claims 'Free Electricity for All'",
+    headline: "XXXXXXXXX",
     category: "Politics",
     verdict: "Fake News",
     content:
-      "This viral post was debunked by the Election Commission. No such policy exists in the official manifesto, and the candidate clarified that the statement was taken out of context. Readers are encouraged to verify claims using official government announcements.",
+      "This article was found to be misleading. Verification by multiple sources shows it contains false claims.",
     image: "/window.svg",
   },
   {
     id: 3,
-    headline: "AI Can Now Predict Natural Disasters",
+    headline: "XXXXXXXXX",
     category: "Technology",
     verdict: "Needs More Context",
     content:
-      "AI models are improving in pattern recognition for earthquakes and weather patterns. However, scientists note that 'prediction' is still not fully accurate — it’s better described as early detection or forecasting.",
+      "Some claims are partially correct but lack important background information or data context.",
+    image: "/file.svg",
+  },
+  {
+    id: 4,
+    headline: "XXXXXXXXX",
+    category: "General",
+    verdict: "Verified True",
+    content:
+      "Independent checks confirm this event actually occurred as described in official reports.",
+    image: "/globe.svg",
+  },
+  {
+    id: 5,
+    headline: "XXXXXXXXX",
+    category: "Politics",
+    verdict: "Fake News",
+    content:
+      "This political claim has been publicly debunked and confirmed false by independent organizations.",
+    image: "/window.svg",
+  },
+  {
+    id: 6,
+    headline: "XXXXXXXXX",
+    category: "Technology",
+    verdict: "Needs More Context",
+    content:
+      "This news involves some truth but the details are simplified. Experts suggest reading full research reports.",
+    image: "/file.svg",
+  },
+  {
+    id: 7,
+    headline: "XXXXXXXXX",
+    category: "General",
+    verdict: "Verified True",
+    content:
+      "Multiple fact-checking bodies have reviewed and verified this information as accurate.",
+    image: "/globe.svg",
+  },
+  {
+    id: 8,
+    headline: "XXXXXXXXX",
+    category: "Politics",
+    verdict: "Fake News",
+    content:
+      "This rumor spread online but has been proven false by government or reputable sources.",
+    image: "/window.svg",
+  },
+  {
+    id: 9,
+    headline: "XXXXXXXXX",
+    category: "Technology",
+    verdict: "Needs More Context",
+    content:
+      "Experts state this claim requires additional technical explanation to be fully understood.",
     image: "/file.svg",
   },
 ];
 
 interface NewsDetailProps {
-  params: {
-    id: string;
-  };
+  params: { id: string };
 }
 
 export default function NewsDetail({ params }: NewsDetailProps) {
-  const post = DUMMY_POSTS.find((p) => p.id === Number(params.id));
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const foundPost = DUMMY_POSTS.find((p) => p.id === Number(params.id));
+    setTimeout(() => {
+      setPost(foundPost || null);
+      setLoading(false);
+    }, 200);
+  }, [params.id]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-gray-500 text-lg">
+        Loading article...
+      </div>
+    );
+  }
 
   if (!post) {
     return (
