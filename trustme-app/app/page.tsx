@@ -1,5 +1,6 @@
 import Layout from '../components/Layout';
 import React from 'react';
+import Link from "next/link";
 
 // Dummy data structure
 interface BlogPost {
@@ -63,9 +64,11 @@ const BlogPage = () => {
               [Image Placeholder]
             </div>
 
-            <button className="w-full py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition duration-150">
-              Detail
-            </button>
+            <Link href={`/news/${post.id}`}>
+              <button className="w-full py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition duration-150">
+                Detail
+              </button>
+            </Link>
           </div>
         ))}
       </div>
