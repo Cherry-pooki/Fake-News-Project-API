@@ -37,13 +37,13 @@ const BlogPage = () => {
         <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
           ⚠️ Needs More Context
         </button>
-        
+
         {/* Date Filter (Simplified) */}
         <div className="ml-auto flex items-center space-x-2">
-            <label htmlFor="from">From:</label>
-            <input id="from" type="date" className="p-2 border rounded-md" />
-            <label htmlFor="to">To:</label>
-            <input id="to" type="date" className="p-2 border rounded-md" />
+          <label htmlFor="from">From:</label>
+          <input id="from" type="date" className="p-2 border rounded-md" />
+          <label htmlFor="to">To:</label>
+          <input id="to" type="date" className="p-2 border rounded-md" />
         </div>
       </div>
 
@@ -58,7 +58,7 @@ const BlogPage = () => {
               </span>
             </div>
             <p className="text-sm text-gray-500 mb-4">Summary/timestamp</p>
-            
+
             {/* Placeholder Image Area */}
             <div className="w-full h-32 bg-gray-100 border border-dashed border-gray-300 flex items-center justify-center text-gray-400 mb-4">
               [Image Placeholder]
