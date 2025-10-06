@@ -69,66 +69,68 @@ const BlogPage = () => {
   
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <div className="mb-6 flex space-x-4 items-center p-3 bg-white rounded-lg shadow-sm border border-gray-200">
-        
-        {/* Filter Buttons */}
-        {VERDICT_FILTERS.map(filter => (
-            <button 
-                key={filter.verdict}
-                onClick={() => handleFilterClick(filter.verdict)}
-                className={getButtonClasses(filter.verdict)}
-            >
-                {filter.icon} {filter.label}
-            </button>
-        ))}
+    <div className='min-h-screen bg-gray-50'>
+      <div className="flex flex-col pb-8">
+        <div className="mb-6 flex space-x-4 items-center p-3 bg-white rounded-lg shadow-sm border border-gray-200">
+          
+          {/* Filter Buttons */}
+          {VERDICT_FILTERS.map(filter => (
+              <button 
+                  key={filter.verdict}
+                  onClick={() => handleFilterClick(filter.verdict)}
+                  className={getButtonClasses(filter.verdict)}
+              >
+                  {filter.icon} {filter.label}
+              </button>
+          ))}
 
-        {/* Date Filter (Simplified) */}
-        <div className="ml-auto flex items-center space-x-2">
-            <label htmlFor="from">From:</label>
-            <input id="from" type="date" className="p-2 border rounded-md" />
-            <label htmlFor="to">To:</label>
-            <input id="to" type="date" className="p-2 border rounded-md" />
+          {/* Date Filter (Simplified) */}
+          <div className="ml-auto flex items-center space-x-2">
+              <label htmlFor="from">From:</label>
+              <input id="from" type="date" className="p-2 border rounded-md" />
+              <label htmlFor="to">To:</label>
+              <input id="to" type="date" className="p-2 border rounded-md" />
+          </div>
         </div>
-      </div>
 
-      {/* Blog Post Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 flex-grow container mx-auto p-4">
-        {filteredPosts.length > 0 ? (
-            filteredPosts.map((post) => (
-                <div key={post.id} className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
-                    <div className="flex justify-between items-start mb-2">
-                        <h3 className="text-lg font-semibold text-gray-800">{post.headline}</h3>
-                        {/* Ensure the verdict is displayed only once and clearly */}
-                        <span className="text-xs font-medium text-teal-600 bg-teal-50 px-2 py-1 rounded-full">
-                            {post.category}
-                        </span>
-                    </div>
-                    <div className="flex justify-between items-start mb-2">
-                        <p className="text-sm text-gray-500 mb-4">Summary/timestamp</p>
-                        <span className="text-xs font-medium text-red-600 bg-red-50 px-2 py-1 rounded-full">
-                            {post.verdict}
-                        </span>
-                    </div>
-                    
-                    {/* Placeholder Image Area */}
-                    <div className="w-full h-32 bg-gray-100 border border-dashed border-gray-300 flex items-center justify-center text-gray-400 mb-4">
-                        [Image Placeholder]
-                    </div>
+        {/* Blog Post Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 flex-grow container m-auto mb-0 mt-0 justify-center">
+          {filteredPosts.length > 0 ? (
+              filteredPosts.map((post) => (
+                  <div key={post.id} className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                      <div className="flex justify-between items-start mb-2">
+                          <h3 className="text-lg font-semibold text-gray-800">{post.headline}</h3>
+                          {/* Ensure the verdict is displayed only once and clearly */}
+                          <span className="text-xs font-medium text-teal-600 bg-teal-50 px-2 py-1 rounded-full">
+                              {post.category}
+                          </span>
+                      </div>
+                      <div className="flex justify-between items-start mb-2">
+                          <p className="text-sm text-gray-500 mb-4">Summary/timestamp</p>
+                          <span className="text-xs font-medium text-red-600 bg-red-50 px-2 py-1 rounded-full">
+                              {post.verdict}
+                          </span>
+                      </div>
+                      
+                      {/* Placeholder Image Area */}
+                      <div className="w-full h-32 bg-gray-100 border border-dashed border-gray-300 flex items-center justify-center text-gray-400 mb-4">
+                          [Image Placeholder]
+                      </div>
 
-                    <Link
-                      href={`/news/${post.id}`}
-                      className="w-full py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition duration-150 text-center block"
-                    >
-                      Detail
-                    </Link>
-                </div>
-            ))
-        ) : (
-            <div className="col-span-full text-center py-10 text-gray-500">
-                No posts found for the selected filter.
-            </div>
-        )}
+                      <Link
+                        href={`/news/${post.id}`}
+                        className="w-full py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition duration-150 text-center block"
+                      >
+                        Detail
+                      </Link>
+                  </div>
+              ))
+          ) : (
+              <div className="col-span-full text-center py-10 text-gray-500">
+                  No posts found for the selected filter.
+              </div>
+          )}
+        </div>
       </div>
     </div>
   );
