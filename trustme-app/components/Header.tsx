@@ -23,21 +23,9 @@ const Header = () => {
           TrustMe
         </Link>
         <nav className="space-x-4">
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-          <Link
-            href="/blog"
-            className="text-teal-600 bg-white px-3 py-1 rounded-md font-medium hover:bg-gray-100"
-=======
           <Link 
             href="/" 
             className={`${baseClass} ${isBlogActive ? activeClass : inactiveClass}`}
->>>>>>> Stashed changes
-=======
-          <Link 
-            href="/" 
-            className={`${baseClass} ${isBlogActive ? activeClass : inactiveClass}`}
->>>>>>> Stashed changes
           >
             News Blog
           </Link>

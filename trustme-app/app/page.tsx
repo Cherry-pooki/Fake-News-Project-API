@@ -63,17 +63,9 @@ const BlogPage = () => {
                 {post.category}
               </span>
             </div>
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
+
             <p className="text-sm text-gray-500 mb-4">Summary/timestamp</p>
 
-=======
-=======
-            
->>>>>>> Stashed changes
-            
-            
->>>>>>> Stashed changes
             {/* Placeholder Image Area */}
             <div className="w-full h-32 bg-gray-100 border border-dashed border-gray-300 flex items-center justify-center text-gray-400 mb-4">
               [Image Placeholder]
