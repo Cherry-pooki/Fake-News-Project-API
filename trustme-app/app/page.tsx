@@ -54,9 +54,16 @@ const BlogPage = () => {
             <div className="flex justify-between items-start mb-2">
               <h3 className="text-lg font-semibold text-gray-800">{post.headline}</h3>
               <span className="text-xs font-medium text-teal-600 bg-teal-50 px-2 py-1 rounded-full">
+                {post.verdict}
+              </span>
+            </div>
+            <div className="flex justify-between items-start mb-2">
+              <p className="text-sm text-gray-500 mb-4">Summary/timestamp</p>
+              <span className="text-xs font-medium text-teal-600 bg-teal-50 px-2 py-1 rounded-full">
                 {post.category}
               </span>
             </div>
+
             <p className="text-sm text-gray-500 mb-4">Summary/timestamp</p>
 
             {/* Placeholder Image Area */}

@@ -1,6 +1,21 @@
+'use client'; // <-- Necessary for using hooks like usePathname
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation'; // <-- Import the hook
 
 const Header = () => {
+  // Get the current URL path
+  const pathname = usePathname();
+
+  // Define base and active classes
+  const baseClass = "px-3 py-1 rounded-md font-medium transition duration-150";
+  const activeClass = "text-teal-600 bg-white hover:bg-gray-100 shadow-md";
+  const inactiveClass = "text-white hover:text-teal-200";
+
+  // Determine if the current path matches the link's href
+  const isBlogActive = pathname === '/';
+  const isFactCheckActive = pathname.startsWith('/fact-check'); // Use startsWith to handle potential sub-paths
+
   return (
     <header className="bg-teal-600 p-4 shadow-md">
       <div className="container mx-auto flex justify-between items-center">
@@ -8,15 +23,15 @@ const Header = () => {
           TrustMe
         </Link>
         <nav className="space-x-4">
-          <Link
-            href="/blog"
-            className="text-teal-600 bg-white px-3 py-1 rounded-md font-medium hover:bg-gray-100"
+          <Link 
+            href="/" 
+            className={`${baseClass} ${isBlogActive ? activeClass : inactiveClass}`}
           >
             News Blog
           </Link>
           <Link
             href="/fact-check"
-            className="text-white hover:text-teal-200"
+            className={`${baseClass} ${isFactCheckActive ? activeClass : inactiveClass}`}
           >
             Fact Check
           </Link>
