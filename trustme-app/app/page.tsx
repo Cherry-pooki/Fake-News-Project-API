@@ -1,13 +1,16 @@
-import Layout from '../components/Layout';
-import React from 'react';
-import Link from "next/link";
+'use client';
+
+import React, { useState, useMemo } from 'react';
+import Link from 'next/link';
 
 // Dummy data structure
+type Verdict = 'Verified True' | 'Fake News' | 'Needs More Context';
+
 interface BlogPost {
   id: number;
   headline: string;
   category: string;
-  verdict: 'Verified True' | 'Fake News' | 'Needs More Context';
+  verdict: Verdict;
 }
 
 const DUMMY_POSTS: BlogPost[] = [
@@ -23,63 +26,111 @@ const DUMMY_POSTS: BlogPost[] = [
   { id: 9, headline: 'XXXXXXXXX', category: 'Technology', verdict: 'Needs More Context' },
 ];
 
+// Define the filter options for clarity
+const VERDICT_FILTERS: { label: string; verdict: Verdict; icon: string; }[] = [
+    { label: 'Verified True', verdict: 'Verified True', icon: '✅' },
+    { label: 'Fake News', verdict: 'Fake News', icon: '❌' },
+    { label: 'Needs More Context', verdict: 'Needs More Context', icon: '⚠️' },
+];
+
 const BlogPage = () => {
+  // State to track the currently active filter (null means show all)
+  const [activeVerdict, setActiveVerdict] = useState<Verdict | null>(null);
+  
+  // State to track the date range (not implemented here, but ready)
+  // const [dateRange, setDateRange] = useState({ from: '', to: '' });
+
+  // Use useMemo to filter the posts efficiently whenever activeVerdict changes
+  const filteredPosts = useMemo(() => {
+    if (!activeVerdict) {
+      return DUMMY_POSTS; // Show all if no filter is active
+    }
+    return DUMMY_POSTS.filter(post => post.verdict === activeVerdict);
+  }, [activeVerdict]);
+
+
+  const getButtonClasses = (buttonVerdict: Verdict) => {
+    // Base classes for all buttons
+    const baseClasses = "px-4 py-2 rounded-md font-medium transition duration-150";
+
+    if (activeVerdict === buttonVerdict) {
+      // Active class: teal background
+      return `${baseClasses} bg-teal-600 text-white shadow-md`;
+    } else {
+      // Inactive class: gray background
+      return `${baseClasses} bg-gray-200 text-gray-700 hover:bg-gray-300`;
+    }
+  };
+
+  const handleFilterClick = (verdict: Verdict) => {
+    // Toggle the filter: if the same button is clicked, reset the filter to null
+    setActiveVerdict(current => current === verdict ? null : verdict);
+  };
+  
+
   return (
-    <Layout>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <div className="mb-6 flex space-x-4 items-center p-3 bg-white rounded-lg shadow-sm border border-gray-200">
+        
         {/* Filter Buttons */}
-        <button className="px-4 py-2 bg-teal-600 text-white rounded-md font-medium">
-          ✅ Verified True
-        </button>
-        <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
-          ❌ Fake News
-        </button>
-        <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
-          ⚠️ Needs More Context
-        </button>
+        {VERDICT_FILTERS.map(filter => (
+            <button 
+                key={filter.verdict}
+                onClick={() => handleFilterClick(filter.verdict)}
+                className={getButtonClasses(filter.verdict)}
+            >
+                {filter.icon} {filter.label}
+            </button>
+        ))}
 
         {/* Date Filter (Simplified) */}
         <div className="ml-auto flex items-center space-x-2">
-          <label htmlFor="from">From:</label>
-          <input id="from" type="date" className="p-2 border rounded-md" />
-          <label htmlFor="to">To:</label>
-          <input id="to" type="date" className="p-2 border rounded-md" />
+            <label htmlFor="from">From:</label>
+            <input id="from" type="date" className="p-2 border rounded-md" />
+            <label htmlFor="to">To:</label>
+            <input id="to" type="date" className="p-2 border rounded-md" />
         </div>
       </div>
 
       {/* Blog Post Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {DUMMY_POSTS.map((post) => (
-          <div key={post.id} className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
-            <div className="flex justify-between items-start mb-2">
-              <h3 className="text-lg font-semibold text-gray-800">{post.headline}</h3>
-              <span className="text-xs font-medium text-teal-600 bg-teal-50 px-2 py-1 rounded-full">
-                {post.verdict}
-              </span>
-            </div>
-            <div className="flex justify-between items-start mb-2">
-              <p className="text-sm text-gray-500 mb-4">Summary/timestamp</p>
-              <span className="text-xs font-medium text-teal-600 bg-teal-50 px-2 py-1 rounded-full">
-                {post.category}
-              </span>
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 flex-grow container mx-auto p-4">
+        {filteredPosts.length > 0 ? (
+            filteredPosts.map((post) => (
+                <div key={post.id} className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                    <div className="flex justify-between items-start mb-2">
+                        <h3 className="text-lg font-semibold text-gray-800">{post.headline}</h3>
+                        {/* Ensure the verdict is displayed only once and clearly */}
+                        <span className="text-xs font-medium text-teal-600 bg-teal-50 px-2 py-1 rounded-full">
+                            {post.category}
+                        </span>
+                    </div>
+                    <div className="flex justify-between items-start mb-2">
+                        <p className="text-sm text-gray-500 mb-4">Summary/timestamp</p>
+                        <span className="text-xs font-medium text-red-600 bg-red-50 px-2 py-1 rounded-full">
+                            {post.verdict}
+                        </span>
+                    </div>
+                    
+                    {/* Placeholder Image Area */}
+                    <div className="w-full h-32 bg-gray-100 border border-dashed border-gray-300 flex items-center justify-center text-gray-400 mb-4">
+                        [Image Placeholder]
+                    </div>
 
-            <p className="text-sm text-gray-500 mb-4">Summary/timestamp</p>
-
-            {/* Placeholder Image Area */}
-            <div className="w-full h-32 bg-gray-100 border border-dashed border-gray-300 flex items-center justify-center text-gray-400 mb-4">
-              [Image Placeholder]
+                    <Link
+                      href={`/news/${post.id}`}
+                      className="w-full py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition duration-150 text-center block"
+                    >
+                      Detail
+                    </Link>
+                </div>
+            ))
+        ) : (
+            <div className="col-span-full text-center py-10 text-gray-500">
+                No posts found for the selected filter.
             </div>
-
-            <Link href={`/news/${post.id}`}>
-              <button className="w-full py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition duration-150">
-                Detail
-              </button>
-            </Link>
-          </div>
-        ))}
+        )}
       </div>
-    </Layout>
+    </div>
   );
 };
 
