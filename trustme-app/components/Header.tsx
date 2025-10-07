@@ -8,7 +8,7 @@ const Header = () => {
   const pathname = usePathname();
 
   // Define base and active classes
-  const baseClass = "px-3 py-1 rounded-md font-medium transition duration-150";
+  const baseClass = "px-3 py-1 mx-3 my-1 rounded-md font-medium transition duration-150";
   const activeClass = "text-teal-600 bg-white hover:bg-gray-100 shadow-md";
   const inactiveClass = "text-white hover:text-teal-200";
 
@@ -22,7 +22,7 @@ const Header = () => {
         <Link href="/" className="text-white text-2xl font-bold">
           TrustMe
         </Link>
-        <nav className="space-x-4">
+        <nav className="space-x-4 mr-4">
           <Link 
             href="/" 
             className={`${baseClass} ${isBlogActive ? activeClass : inactiveClass}`}
