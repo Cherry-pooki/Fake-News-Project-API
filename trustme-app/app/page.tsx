@@ -12,6 +12,7 @@ interface BlogPost {
   category: string;
   verdict: Verdict;
   date: string;
+  image?: string;
 }
 
 // Helper function to format the date
@@ -24,16 +25,18 @@ const formatDate = (dateString: string) => {
 };
 
 const DUMMY_POSTS: BlogPost[] = [
-  // ADDED DUMMY DATES to the posts
-  { id: 1, headline: 'First Quarter Economic Report Analysis', category: 'General', verdict: 'Verified True', date: '2025-09-01' },
-  { id: 2, headline: 'New Bill Proposed to Regulate AI', category: 'Politics', verdict: 'Fake News', date: '2025-09-05' },
-  { id: 3, headline: 'Breakthrough in Fusion Energy Research', category: 'Technology', verdict: 'Needs More Context', date: '2025-09-10' },
-  { id: 4, headline: 'Local Election Results Surprise Experts', category: 'General', verdict: 'Verified True', date: '2025-09-15' },
-  { id: 5, headline: 'Global Trade Deal Signed By 50 Nations', category: 'Politics', verdict: 'Fake News', date: '2025-09-18' },
-  { id: 6, headline: 'Innovative Water Filtration System Launched', category: 'Technology', verdict: 'Needs More Context', date: '2025-09-22' },
-  { id: 7, headline: 'Annual Public Health Metrics Released', category: 'General', verdict: 'Verified True', date: '2025-09-25' },
-  { id: 8, headline: 'Emergency Tax Measures Passed Today', category: 'Politics', verdict: 'Fake News', date: '2025-09-29' },
-  { id: 9, headline: 'Next Generation Quantum Computer Unveiled', category: 'Technology', verdict: 'Needs More Context', date: '2025-10-02' },
+  { id: 1, headline: 'Illinois sues to stop National Guard deployment as Trump escalates clash with states', category: 'World', verdict: 'Verified True', date: '2025-10-07', image: '/images/news1.jpg' },
+  { id: 2, headline: 'McDavid signs two-year contract extension with Edmonton Oilers', category: 'Sports', verdict: 'Verified True', date: '2025-10-07', image: '/images/news2.jpg' },
+  { id: 3, headline: 'White House says no shutdown-related layoffs yet, but warns they could come', category: 'Business', verdict: 'Verified True', date: '2025-10-06', image: '/images/news3.jpg' },
+  { id: 4, headline: 'Image of ‘no manners’ Trump eating spaghetti during king’s speech is edited', category: 'Politics', verdict: 'Fake News', date: '2025-10-06', image: '/images/news4.jpg' },
+  { id: 5, headline: 'Urgent! The third storm is headed towards Thailand via the North and Northeast.', category: 'Environment', verdict: 'Needs More Context', date: '2025-10-06', image: '/images/news5.webp' },
+  { id: 6, headline: 'IChild’s arrest for theft misrepresented as for waving England flag', category: 'Politics', verdict: 'Fake News', date: '2025-09-30', image: '/images/news6.jpg' },
+  { id: 7, headline: 'Climate change and pollution threaten Europe’s resources, EU warns', category: 'Environment', verdict: 'Verified True', date: '2025-09-29', image: '/images/news7.jpg' },
+  { id: 8, headline: 'Britain’s Starmer did not say Hamas can apply for London embassy', category: 'Politics', verdict: 'Fake News', date: '2025-09-29', image: '/images/news8.jpg' },
+  { id: 9, headline: 'Bangkok sinks 1 cm per year. Heavy rains are clogging drainage and risking submersion by 2030', category: 'Environment', verdict: 'Needs More Context', date: '2025-09-27', image: '/images/news9.webp' },
+  { id: 10, headline: 'Google AI presented my April Fools’ story as real news', category: 'Technology', verdict: 'Fake News', date: '2025-04-03', image: '/images/news10.jpg' },
+  { id: 11, headline: 'False headline resurfaces to push COVID scam conspiracy', category: 'Health', verdict: 'Fake News', date: '2024-12-17', image: '/images/news11.jpg' },
+  { id: 12, headline: 'Typo on display of Virginia voting equipment does not invalidate votes', category: 'General', verdict: 'Needs More Context', date: '2024-11-06', image: '/images/news12.jpg' },
 ];
 
 // Define the filter options for clarity
@@ -123,9 +126,17 @@ const BlogPage = () => {
                       </div>
 
                       {/* Placeholder Image Area */}
-                      <div className="w-full h-32 bg-gray-100 border border-dashed border-gray-300 flex items-center justify-center text-gray-400 mb-4">
-                            [Image Placeholder]
-                      </div>
+                      {post.image ? (
+                        <img
+                          src={post.image}
+                          alt={post.headline}
+                          className="w-full h-32 object-cover rounded mb-4"
+                        />
+                      ) : (
+                        <div className="w-full h-32 bg-gray-100 border border-dashed border-gray-300 flex items-center justify-center text-gray-400 mb-4">
+                          [Image Placeholder]
+                        </div>
+                      )}
 
                       <Link
                           href={`/news/${post.id}`}
