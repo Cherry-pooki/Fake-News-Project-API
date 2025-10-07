@@ -9,6 +9,7 @@ interface BlogPost {
   verdict: "Verified True" | "Fake News" | "Needs More Context";
   content: string;
   image: string;
+  date: string;
 }
 
 const DUMMY_POSTS: BlogPost[] = [
