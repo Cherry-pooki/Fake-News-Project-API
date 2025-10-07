@@ -94,7 +94,7 @@ export default function FactCheckPage() {
   };
 
   return (
-    <>
+    <div className='min-h-screen bg-gray-100 py-12 px-4'>
       <h1 className="text-3xl font-bold text-center mb-8 text-teal-700">Fact Check</h1>
 
       <div className="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-2xl border border-teal-200">
@@ -117,6 +117,6 @@ export default function FactCheckPage() {
 
         {renderResult()}
       </div>
-    </>
+    </div>
   );
 }
