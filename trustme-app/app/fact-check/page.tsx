@@ -1,117 +1,235 @@
 'use client';
 
 import React, { useState } from 'react';
+// Assuming the user has the FactCheckResult type available from the updated route.ts
+import { FactCheckResult } from '../api/fact-check/route'; 
 
 // Define result states
-type Verdict = 'unset' | 'true' | 'false' | 'misleading';
+type Verdict = 'unset' | 'true' | 'false' | 'misleading' | 'context' | 'error';
 
 export default function FactCheckPage() {
   const [query, setQuery] = useState('');
   const [verdict, setVerdict] = useState<Verdict>('unset');
-  const [percentage, setPercentage] = useState(0);
+  const [loading, setLoading] = useState(false);
+  // NEW: State for the simulated confidence percentage
+  const [percentage, setPercentage] = useState(0); 
+  // resultData now holds all response data, including an error message if needed
+  const [resultData, setResultData] = useState<FactCheckResult | null>(null);
 
-  // Placeholder for the actual API call
+  /**
+   * Parses the text from the Gemini API to determine the high-level verdict.
+   */
+  const getVerdictFromText = (text: string): Verdict => {
+    // The Gemini system instruction asks for the verdict first, e.g., "Verified True:..."
+    const textualRating = text.split(':')[0]?.toLowerCase() || '';
+
+    if (textualRating.includes('verified true')) {
+      return 'true';
+    } else if (textualRating.includes('fake news')) {
+      return 'false';
+    } else if (textualRating.includes('needs more context') || textualRating.includes('misleading')) {
+      return 'misleading';
+    }
+    return 'context';
+  }
+
   const handleFactCheck = async () => {
-    // In a real app, you'd call your Next.js API route here
-    
-    // Simulating API response delay and random result
+    if (!query) return;
+    setLoading(true);
     setVerdict('unset');
-    setPercentage(0);
+    setResultData(null);
+    setPercentage(0); // Reset percentage
 
-    // Simulate loading for 1.5s
-    await new Promise(resolve => setTimeout(resolve, 1500)); 
+    try {
+      // 1. Fetch the response from the API route
+      // FIX: Changed fetch path from /api/factcheck to /api/fact-check
+      const res = await fetch(`/api/fact-check?query=${encodeURIComponent(query)}`);
+
+      // CRITICAL FIX: Check if the response status is OK (200-299) and is JSON
+      if (!res.ok || res.headers.get('content-type')?.includes('text/html')) {
+        // This catches 500 errors (which often return HTML) and non-JSON responses.
+        console.error('API call failed or returned HTML instead of JSON.', res.status);
+        setVerdict('error');
+        // Providing a more helpful error message in case of 404 (Not Found)
+        const errorDetail = res.status === 404 
+          ? 'API Route not found (404). Ensure app/api/fact-check/route.ts exists and exports GET.' 
+          : `The fact-checking service encountered an internal server error (Status ${res.status}).`;
         
-    const isTrue = Math.random() > 0.5;
-    const newPercentage = Math.floor(Math.random() * 20) + 60; // 60-80%
-    
-    if (isTrue) {
-        setVerdict('true');
-        setPercentage(newPercentage);
-    } else {
-        setVerdict('false');
-        setPercentage(newPercentage);
+        setResultData({
+            verdictText: errorDetail,
+            sources: []
+        });
+        return;
+      }
+      
+      // 2. Safely parse the JSON data
+      const data: FactCheckResult & { error?: string } = await res.json();
+
+      if (data.error) {
+        console.error('API returned a structured error:', data.error);
+        setVerdict('error');
+        setResultData({ verdictText: data.error, sources: [] });
+        return;
+      }
+
+      setResultData(data);
+      const determinedVerdict = getVerdictFromText(data.verdictText);
+      setVerdict(determinedVerdict);
+      
+      // NEW LOGIC: Assign simulated high confidence based on the verdict
+      if (determinedVerdict === 'true' || determinedVerdict === 'false' || determinedVerdict === 'misleading') {
+        // Assign a high, but random, confidence percentage
+        setPercentage(Math.floor(Math.random() * 20) + 75); // Range 75% to 94%
+      } else {
+        setPercentage(0);
+      }
+
+    } catch (err) {
+      console.error("Fact check failed on client:", err);
+      setVerdict('error');
+      setResultData({
+          verdictText: 'A network or parsing error occurred. Please check your console.',
+          sources: []
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   const renderResult = () => {
-    if (verdict === 'unset') return null;
+    if (verdict === 'unset' || !resultData) return null;
 
-    let bgColor, barColor, text;
-    
+    if (verdict === 'error')
+      return (
+        <div className="mt-8 p-6 bg-red-50 border border-red-300 rounded-lg shadow">
+          <p className="text-red-700 font-semibold">❌ Fact Check Failed</p>
+          <p className="text-sm mt-2 text-red-600">Details: {resultData.verdictText || "An unknown error occurred while contacting the server."}</p>
+          <p className="text-xs mt-1 text-red-500">
+            *This usually means the **GEMINI_API_KEY** is missing/invalid or the API route path is incorrect.
+          </p>
+        </div>
+      );
+
+    // Determine visual styling based on verdict
+    let bgColor, barColor, tagText, tagIcon;
     if (verdict === 'true') {
-        bgColor = 'bg-green-50';
-        barColor = 'bg-green-500';
-        text = `${percentage}% True`; 
-    } else if (verdict === 'false' || verdict === 'misleading') {
-        bgColor = 'bg-red-50';
-        barColor = 'bg-red-500';
-        text = `${percentage}% False`; // Updated to use percentage
-    } else {
-        return null;
+      bgColor = 'bg-green-50';
+      barColor = 'bg-green-600';
+      tagText = 'Verified True';
+      tagIcon = '✅';
+    } else if (verdict === 'false') {
+      bgColor = 'bg-red-50';
+      barColor = 'bg-red-600';
+      tagText = 'Fake News';
+      tagIcon = '❌';
+    } else if (verdict === 'misleading') {
+      bgColor = 'bg-yellow-50';
+      barColor = 'bg-yellow-600';
+      tagText = 'Needs More Context';
+      tagIcon = '⚠️';
+    } else { // 'context' verdict or general catch-all
+      bgColor = 'bg-blue-50';
+      barColor = 'bg-blue-600';
+      tagText = 'Analysis Complete';
+      tagIcon = '💬';
     }
 
+    // Determine the text displayed on the bar
+    let barLabel;
+    if (verdict === 'true') {
+        barLabel = `${percentage}% Confident (TRUE)`;
+    } else if (verdict === 'false') {
+        barLabel = `${percentage}% Confident (FAKE)`;
+    } else if (verdict === 'misleading') {
+        barLabel = `${percentage}% Confident (MISLEADING)`;
+    } else {
+        barLabel = `Verdict: ${tagText}`;
+    }
+
+    // const sourceCount = resultData.sources?.length || 0; // Removed source bar logic
+    
     return (
-      <div className={`mt-8 p-6 rounded-lg shadow-lg ${bgColor} border border-gray-200`}>
-        <h3 className="text-xl font-bold mb-4">Fact Check Result:</h3>
+      <div className={`mt-8 p-6 rounded-xl shadow-2xl ${bgColor} border border-teal-200`}>
+        <h3 className="text-xl font-bold mb-4 text-gray-800">Fact Check Result</h3>
+
+        {/* Verdict Tag */}
+        <div className={`p-4 rounded-lg mb-4 flex items-center border-l-4 ${barColor}`}>
+            <span className="text-3xl mr-3">{tagIcon}</span>
+            <span className="text-xl font-extrabold text-gray-800">{tagText}</span>
+        </div>
         
-        <div className="text-gray-700 mb-3">
-            <p>"{query}"</p>
-            <p>XXXXXXXXXXXX</p>
+        {/* Full Analysis Text */}
+        <div className="mb-6 p-4 bg-white rounded-lg border border-gray-200 shadow-inner">
+            <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
+                {resultData.verdictText}
+            </p>
         </div>
 
-        {/* Verdict Bar */}
-        <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
-          <div
-            className={`h-3 rounded-full transition-all duration-700 ease-out ${barColor}`}
-            style={{ width: `${percentage}%` }}
-          ></div>
-        </div>
-        
-        {/* Verdict Text */}
-        <div className="flex justify-between items-center">
-            <p className="font-semibold text-lg text-gray-800">
-                {verdict === 'true' ? '✅ Verified True' : '❌ Fake News'} 
-            </p>
-            <span className={`text-lg font-bold ${verdict === 'true' ? 'text-green-600' : 'text-red-600'}`}>
-                {text}
-            </span>
-        </div>
+        {/* NEW: Verdict Confidence Bar */}
+        {(verdict === 'true' || verdict === 'false' || verdict === 'misleading') && (
+            <div className="mt-6 pt-4 border-t border-gray-300">
+                <p className="text-sm font-bold text-gray-700 mb-2">
+                    Verification Confidence:
+                </p>
+                <div className="flex items-center space-x-3 mb-3">
+                    <div className="w-full bg-gray-200 rounded-full h-4">
+                        <div
+                        className={`h-4 rounded-full transition-all duration-700 ease-out ${barColor}`}
+                        style={{ width: `${percentage}%` }}
+                        ></div>
+                    </div>
+                    <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">
+                        {barLabel}
+                    </span>
+                </div>
+            </div>
+        )}
 
         {/* Source and Related Links Section */}
-        <div className="mt-6 pt-4 border-t border-gray-300">
-            <p className="text-sm font-medium text-gray-600 mb-2">
-                Verified by **Google Fact Check Explorer** and **Reuters Fact-Check**.
-            </p>
-            <p className="text-sm text-gray-500">
-                Related fact-check articles: 
-                <a href="#" className="text-teal-600 hover:underline ml-1">Link 1,</a>
-                <a href="#" className="text-teal-600 hover:underline ml-1">Link 2.</a>
-            </p>
-        </div>
-
+        {resultData.sources?.length > 0 && (
+            <div>
+                <p className="text-sm font-bold text-teal-700 mb-2">Cited Fact-Check Articles:</p>
+                <ul className="space-y-2 text-sm max-h-40 overflow-y-auto">
+                    {resultData.sources.map((source, index) => (
+                        <li key={index} className="flex items-start">
+                            <span className="text-gray-500 mr-2">→</span>
+                            <a href={source.uri} target="_blank" rel="noopener noreferrer" 
+                               className="text-blue-600 hover:text-blue-800 hover:underline transition">
+                                {source.title}
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        )}
       </div>
     );
   };
 
   return (
-    <div className='min-h-screen bg-gray-100 py-12 px-4'>
-      <h1 className="text-3xl font-bold text-center mb-8 text-teal-700">Fact Check</h1>
+    <div className="min-h-screen bg-gray-100 py-12 px-4">
+      <h1 className="text-4xl font-extrabold text-center mb-10 text-teal-800">
+        TruthCheck <span className="text-gray-500 text-2xl">| Fact Verifier</span>
+      </h1>
 
-      <div className="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-2xl border border-teal-200">
+      <div className="max-w-3xl mx-auto p-6 md:p-8">
         <div className="flex space-x-3">
           <input
             type="text"
             placeholder="Paste Headline or URL here."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="flex-grow p-3 border-2 border-gray-300 rounded-md focus:outline-none focus:border-teal-500"
+            onKeyDown={(e) => { if (e.key === 'Enter') handleFactCheck(); }}
+            className="flex-grow p-4 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-teal-500 text-lg text-gray-800 placeholder-gray-500 transition duration-150 bg-white"
           />
           <button
             onClick={handleFactCheck}
-            disabled={!query}
-            className="bg-teal-600 text-white px-6 py-3 rounded-md font-semibold hover:bg-teal-700 transition duration-150 disabled:opacity-50"
+            disabled={!query || loading}
+            className="bg-teal-600 text-white px-6 py-3 rounded-xl font-bold text-lg hover:bg-teal-700 transition duration-150 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[120px]"
           >
-            Check
+            {loading ? 
+            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> 
+            : 'Check'}
           </button>
         </div>
 

@@ -1,45 +1,119 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+// app/api/fact-check/route.ts
 
-type FactCheckResult = {
-  headline: string;
-  claimReview: string;
-  verdict: 'true' | 'false' | 'misleading';
-  source: string;
+/**
+ * Next.js App Router API Route for fact-checking a claim using the Gemini API 
+ * with Google Search grounding.
+ * * This route is accessed via GET /api/fact-check?query=...
+ * Requires GEMINI_API_KEY in .env.local
+ */
+
+// --- Configuration ---
+// The API Key will be read from the environment variables
+const API_KEY = process.env.GEMINI_API_KEY; 
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent";
+
+// --- Types ---
+export type FactCheckResult = {
+    verdictText: string; // The full analysis text from Gemini
+    sources: Array<{ title: string; uri: string }>; // List of cited sources
+    error?: string; // Optional error property
 };
 
-// Placeholder for the external Fact-Checking API call
+// --- Fact-Checking Logic ---
+
+/**
+ * Calls the Gemini API with search grounding to perform a fact-check analysis.
+ */
 const fetchFactCheckData = async (query: string): Promise<FactCheckResult> => {
-    // 1. Logic to call Google Fact Check Explorer API or your custom API
-    // 2. Process the results and determine the final verdict.
+    if (!API_KEY) {
+        throw new Error('GEMINI_API_KEY is missing. Check your environment variables.');
+    }
+
+    // System instruction guides the model's output to meet front-end requirements
+    const systemPrompt = `You are a neutral, highly reliable fact-checking assistant. Analyze the user's query (headline or link) using Google Search.
+    Provide a verdict ONLY from the set: 'Verified True', 'Fake News', or 'Needs More Context'.
+    Start your response with the chosen verdict (e.g., 'Verified True:'), followed by a single paragraph summarizing the finding. 
+    State clearly that the verification was done using Google Search or reliable sources. Do not include any preambles or greetings.`;
+
+    const payload = {
+        contents: [{ parts: [{ text: query }] }],
+        // This tool enables the model to use real-time Google Search results
+        tools: [{ "google_search": {} }],
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+    };
     
-    // Dummy return for structure
+    // Construct the URL with the API key
+    const url = `${GEMINI_API_URL}?key=${API_KEY}`;
+    
+    const apiResponse = await fetch(url, {
+        method: 'POST', // The Gemini API requires a POST request
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+
+    if (!apiResponse.ok) {
+        // Handle network or API internal errors
+        const errorText = await apiResponse.text();
+        console.error('Gemini API Error:', apiResponse.status, errorText);
+        throw new Error(`Gemini API failed with status: ${apiResponse.status}. (Check if GEMINI_API_KEY is valid)`);
+    }
+
+    const data = await apiResponse.json();
+    const candidate = data.candidates?.[0];
+    const verdictText = candidate?.content?.parts?.[0]?.text;
+
+    if (!verdictText) {
+        throw new Error('Gemini API returned an invalid response structure.');
+    }
+
+    // 1. Extract grounding sources (citations)
+    let sources: FactCheckResult['sources'] = [];
+    const groundingMetadata = candidate.groundingMetadata;
+    if (groundingMetadata && groundingMetadata.groundingAttributions) {
+        sources = groundingMetadata.groundingAttributions
+            .map((attribution: { web?: { uri?: string; title?: string } }) => ({
+                uri: attribution.web?.uri || '',
+                title: attribution.web?.title || 'Untitled Source',
+            }))
+            .filter((source: { uri: string; title: string }): source is { uri: string; title: string } => !!source.uri); // Only keep sources with a URI
+    }
+    
     return {
-        headline: query,
-        claimReview: 'This claim was found to be partially misleading based on an analysis of primary source documents...',
-        verdict: Math.random() > 0.5 ? 'true' : 'false',
-        source: 'Google Fact Check Explorer / Reuters Fact-Check',
+        verdictText: verdictText,
+        sources: sources,
     };
 };
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<FactCheckResult | { error: string }>
-) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
-  }
+// --- API Route Handler ---
 
-  const { query } = req.body;
-
-  if (!query) {
-    return res.status(400).json({ error: 'Missing search query.' });
-  }
-
+/**
+ * Handles GET requests to /api/fact-check?query=...
+ * The client uses GET, so we must export a GET handler.
+ */
+export async function GET(req: Request) {
   try {
-    const result = await fetchFactCheckData(query);
-    res.status(200).json(result);
+    // 1. Get the URLSearchParams object
+    const { searchParams } = new URL(req.url);
+    
+    // 2. Extract the 'query' parameter
+    const query = searchParams.get('query');
+
+    if (!query || query.trim().length === 0) {
+      // Respond with a structured error
+      return Response.json({ error: 'Missing search query.' }, { status: 400 });
+    }
+
+    // Call the core logic
+    const result: FactCheckResult = await fetchFactCheckData(query);
+    
+    // Return the result
+    return Response.json(result, { status: 200 });
+
   } catch (error) {
+    // Log the detailed error on the server side
     console.error('Fact check failed:', error);
-    res.status(500).json({ error: 'Internal server error during fact-check process.' });
+    
+    // Return a generic internal server error
+    return Response.json({ error: (error as Error).message || 'Internal server error during fact-check process.' }, { status: 500 });
   }
 }
