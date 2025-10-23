@@ -67,7 +67,6 @@ const DUMMY_POSTS: BlogPost[] = [
 ];
 
 export default async function NewsDetail({ params }: { params: Promise<{ id: string }> }) {
-  // ✅ Unwrap the Promise (Next.js 15)
   const { id } = await params;
   const post = DUMMY_POSTS.find((p) => p.id === Number(id));
 
