@@ -30,7 +30,6 @@ const fetchFactCheckData = async (query: string): Promise<FactCheckResult> => {
     // This is the body of the POST request send to Gemini
     const payload = {
         contents: [{ parts: [{ text: query }] }],
-        // Google Search Grounding 
         tools: [{ "google_search": {} }],
         systemInstruction: { parts: [{ text: systemPrompt }] },
     };
