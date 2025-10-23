@@ -1,5 +1,3 @@
-// app/api/fact-check/route.ts
-
 /**
  * Next.js App Router API Route for fact-checking a claim using the Gemini API 
  * with Google Search grounding.
@@ -8,7 +6,7 @@
  */
 
 // --- Configuration ---
-// The API Key will be read from the environment variables
+// The API Key will be read from the environment variables (.env.local)
 const API_KEY = process.env.GEMINI_API_KEY; 
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent";
 
