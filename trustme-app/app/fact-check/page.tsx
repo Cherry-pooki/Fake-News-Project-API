@@ -145,8 +145,6 @@ export default function FactCheckPage() {
     } else {
         barLabel = `Verdict: ${tagText}`;
     }
-
-    // const sourceCount = resultData.sources?.length || 0; // Removed source bar logic
     
     return (
       <div className={`mt-8 p-6 rounded-xl shadow-2xl ${bgColor} border border-teal-200`}>
