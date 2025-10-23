@@ -205,7 +205,7 @@ export default function FactCheckPage() {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') handleFactCheck(); }}
             className="flex-grow p-4 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-teal-500 text-lg text-gray-800 placeholder-gray-500 transition duration-150 bg-white"
-          /> /* Input field bound to query with “Enter” shortcut */
+          />
           <button
             onClick={handleFactCheck}
             disabled={!query || loading}
