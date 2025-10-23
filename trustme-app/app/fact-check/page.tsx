@@ -20,7 +20,7 @@ export default function FactCheckPage() {
    * Parses the text from the Gemini API to determine the high-level verdict.
    */
   const getVerdictFromText = (text: string): Verdict => {
-    // The Gemini system instruction asks for the verdict first, e.g., "Verified True:..."
+    // The Gemini system instruction asks for the verdict first,
     const textualRating = text.split(':')[0]?.toLowerCase() || '';
 
     if (textualRating.includes('verified true')) {
@@ -42,15 +42,11 @@ export default function FactCheckPage() {
 
     try {
       // 1. Fetch the response from the API route
-      // FIX: Changed fetch path from /api/factcheck to /api/fact-check
       const res = await fetch(`/api/fact-check?query=${encodeURIComponent(query)}`);
 
-      // CRITICAL FIX: Check if the response status is OK (200-299) and is JSON
       if (!res.ok || res.headers.get('content-type')?.includes('text/html')) {
-        // This catches 500 errors (which often return HTML) and non-JSON responses.
         console.error('API call failed or returned HTML instead of JSON.', res.status);
         setVerdict('error');
-        // Providing a more helpful error message in case of 404 (Not Found)
         const errorDetail = res.status === 404 
           ? 'API Route not found (404). Ensure app/api/fact-check/route.ts exists and exports GET.' 
           : `The fact-checking service encountered an internal server error (Status ${res.status}).`;
@@ -78,8 +74,7 @@ export default function FactCheckPage() {
       
       // NEW LOGIC: Assign simulated high confidence based on the verdict
       if (determinedVerdict === 'true' || determinedVerdict === 'false' || determinedVerdict === 'misleading') {
-        // Assign a high, but random, confidence percentage
-        setPercentage(Math.floor(Math.random() * 20) + 75); // Range 75% to 94%
+        setPercentage(Math.floor(Math.random() * 20) + 75);
       } else {
         setPercentage(0);
       }
