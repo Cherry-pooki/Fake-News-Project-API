@@ -1,10 +1,3 @@
-/**
- * Next.js App Router API Route for fact-checking a claim using the Gemini API 
- * with Google Search grounding.
- * * This route is accessed via GET /api/fact-check?query=...
- * Requires GEMINI_API_KEY in .env.local
- */
-
 // --- Configuration ---
 // The API Key will be read from the environment variables (.env.local)
 const API_KEY = process.env.GEMINI_API_KEY; 
@@ -12,9 +5,9 @@ const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/
 
 // --- Types ---
 export type FactCheckResult = {
-    verdictText: string; // The full analysis text from Gemini
-    sources: Array<{ title: string; uri: string }>; // List of cited sources
-    error?: string; // Optional error property
+    verdictText: string;
+    sources: Array<{ title: string; uri: string }>;
+    error?: string;
 };
 
 // --- Fact-Checking Logic ---
@@ -84,10 +77,6 @@ const fetchFactCheckData = async (query: string): Promise<FactCheckResult> => {
 
 // --- API Route Handler ---
 
-/**
- * Handles GET requests to /api/fact-check?query=...
- * The client uses GET, so we must export a GET handler.
- */
 export async function GET(req: Request) {
   try {
     // 1. Get the URLSearchParams object
