@@ -153,9 +153,9 @@ export default function FactCheckPage() {
         <h3 className="text-xl font-bold mb-4 text-gray-800">Fact Check Result</h3>
 
         {/* Verdict Tag */}
-        <div className={`p-4 rounded-lg mb-4 flex items-center border-l-4 ${barColor}`}>
+        <div className={`p-4 rounded-lg mb-4 flex items-center ${barColor}`}>
             <span className="text-3xl mr-3">{tagIcon}</span>
-            <span className="text-xl font-extrabold text-gray-800">{tagText}</span>
+            <span className="text-xl font-extrabold text-white">{tagText}</span>
         </div>
         
         {/* Full Analysis Text */}
@@ -209,7 +209,7 @@ export default function FactCheckPage() {
   return (
     <div className="min-h-screen bg-gray-100 py-12 px-4">
       <h1 className="text-4xl font-extrabold text-center mb-10 text-teal-800">
-        TruthCheck <span className="text-gray-500 text-2xl">| Fact Verifier</span>
+        TruthChecker <span className="text-gray-500 text-2xl">| Fact Verifier</span>
       </h1>
 
       <div className="max-w-3xl mx-auto p-6 md:p-8">
