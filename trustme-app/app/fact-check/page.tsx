@@ -7,10 +7,11 @@ import { FactCheckResult } from '../api/fact-check/route';
 // Define result states
 type Verdict = 'unset' | 'true' | 'false' | 'misleading' | 'context' | 'error';
 
+// State Variables
 export default function FactCheckPage() {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(''); // user's input
   const [verdict, setVerdict] = useState<Verdict>('unset');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // loading spinner while fetching data
   // NEW: State for the simulated confidence percentage
   const [percentage, setPercentage] = useState(0); 
   // resultData now holds all response data, including an error message if needed
@@ -18,6 +19,7 @@ export default function FactCheckPage() {
 
   /**
    * Parses the text from the Gemini API to determine the high-level verdict.
+   * Helper Function — Verdict Detection
    */
   const getVerdictFromText = (text: string): Verdict => {
     // The Gemini system instruction asks for the verdict first,
@@ -33,17 +35,21 @@ export default function FactCheckPage() {
     return 'context';
   }
 
+  // This runs when the user clicks “Check” or presses Enter
   const handleFactCheck = async () => {
     if (!query) return;
     setLoading(true);
     setVerdict('unset');
     setResultData(null);
-    setPercentage(0); // Reset percentage
+    setPercentage(0);
+    // Prevents empty searches & Resets all states for a fresh run.
 
     try {
       // 1. Fetch the response from the API route
+      // Sends a GET request to Next.js API route with the query attached
       const res = await fetch(`/api/fact-check?query=${encodeURIComponent(query)}`);
 
+      // Handles bad responses
       if (!res.ok || res.headers.get('content-type')?.includes('text/html')) {
         console.error('API call failed or returned HTML instead of JSON.', res.status);
         setVerdict('error');
@@ -59,6 +65,7 @@ export default function FactCheckPage() {
       }
       
       // 2. Safely parse the JSON data
+      // Converts the JSON response into a TypeScript object with verdictText, sources, etc.
       const data: FactCheckResult & { error?: string } = await res.json();
 
       if (data.error) {
@@ -68,17 +75,19 @@ export default function FactCheckPage() {
         return;
       }
 
+      // Saves the result to state and determines the verdict type from text
       setResultData(data);
       const determinedVerdict = getVerdictFromText(data.verdictText);
       setVerdict(determinedVerdict);
       
-      // NEW LOGIC: Assign simulated high confidence based on the verdict
+      // Simulates a “confidence percentage” for strong verdicts
       if (determinedVerdict === 'true' || determinedVerdict === 'false' || determinedVerdict === 'misleading') {
         setPercentage(Math.floor(Math.random() * 20) + 75);
       } else {
         setPercentage(0);
       }
 
+      // Handles network or parsing errors and stops loading spinner
     } catch (err) {
       console.error("Fact check failed on client:", err);
       setVerdict('error');
@@ -177,24 +186,6 @@ export default function FactCheckPage() {
                 </div>
             </div>
         )}
-
-        {/* Source and Related Links Section */}
-        {resultData.sources?.length > 0 && (
-            <div>
-                <p className="text-sm font-bold text-teal-700 mb-2">Cited Fact-Check Articles:</p>
-                <ul className="space-y-2 text-sm max-h-40 overflow-y-auto">
-                    {resultData.sources.map((source, index) => (
-                        <li key={index} className="flex items-start">
-                            <span className="text-gray-500 mr-2">→</span>
-                            <a href={source.uri} target="_blank" rel="noopener noreferrer" 
-                               className="text-blue-600 hover:text-blue-800 hover:underline transition">
-                                {source.title}
-                            </a>
-                        </li>
-                    ))}
-                </ul>
-            </div>
-        )}
       </div>
     );
   };
@@ -214,7 +205,7 @@ export default function FactCheckPage() {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') handleFactCheck(); }}
             className="flex-grow p-4 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-teal-500 text-lg text-gray-800 placeholder-gray-500 transition duration-150 bg-white"
-          />
+          /> /* Input field bound to query with “Enter” shortcut */
           <button
             onClick={handleFactCheck}
             disabled={!query || loading}

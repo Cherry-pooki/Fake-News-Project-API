@@ -16,6 +16,7 @@ export type FactCheckResult = {
  * Calls the Gemini API with search grounding to perform a fact-check analysis.
  */
 const fetchFactCheckData = async (query: string): Promise<FactCheckResult> => {
+    // Checks if have a valid API key.
     if (!API_KEY) {
         throw new Error('GEMINI_API_KEY is missing. Check your environment variables.');
     }
@@ -26,9 +27,10 @@ const fetchFactCheckData = async (query: string): Promise<FactCheckResult> => {
     Start your response with the chosen verdict (e.g., 'Verified True:'), followed by a single paragraph summarizing the finding. 
     State clearly that the verification was done using Google Search or reliable sources. Do not include any preambles or greetings.`;
 
+    // This is the body of the POST request send to Gemini
     const payload = {
         contents: [{ parts: [{ text: query }] }],
-        // This tool enables the model to use real-time Google Search results
+        // Google Search Grounding 
         tools: [{ "google_search": {} }],
         systemInstruction: { parts: [{ text: systemPrompt }] },
     };
@@ -36,42 +38,37 @@ const fetchFactCheckData = async (query: string): Promise<FactCheckResult> => {
     // Construct the URL with the API key
     const url = `${GEMINI_API_URL}?key=${API_KEY}`;
     
+    // Sends the actual API call to Google
     const apiResponse = await fetch(url, {
         method: 'POST', // The Gemini API requires a POST request
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
     });
 
+    // Handle network or API internal errors
     if (!apiResponse.ok) {
-        // Handle network or API internal errors
         const errorText = await apiResponse.text();
         console.error('Gemini API Error:', apiResponse.status, errorText);
         throw new Error(`Gemini API failed with status: ${apiResponse.status}. (Check if GEMINI_API_KEY is valid)`);
     }
 
+    // Parses the JSON Gemini sent back
     const data = await apiResponse.json();
     const candidate = data.candidates?.[0];
-    const verdictText = candidate?.content?.parts?.[0]?.text;
+    const verdictText = candidate?.content?.parts?.[0]?.text; // where Gemini puts its text answer
 
+    // If Gemini didn’t send valid text, it throws an error
     if (!verdictText) {
         throw new Error('Gemini API returned an invalid response structure.');
     }
 
     // 1. Extract grounding sources (citations)
-    let sources: FactCheckResult['sources'] = [];
-    const groundingMetadata = candidate.groundingMetadata;
-    if (groundingMetadata && groundingMetadata.groundingAttributions) {
-        sources = groundingMetadata.groundingAttributions
-            .map((attribution: { web?: { uri?: string; title?: string } }) => ({
-                uri: attribution.web?.uri || '',
-                title: attribution.web?.title || 'Untitled Source',
-            }))
-            .filter((source: { uri: string; title: string }): source is { uri: string; title: string } => !!source.uri); // Only keep sources with a URI
-    }
+    // (Removed grounding logic here — no longer extracting source links)
     
+    // Returns both the AI’s text and an empty list of sources to the API handler
     return {
         verdictText: verdictText,
-        sources: sources,
+        sources: [], // Empty array to avoid breaking frontend
     };
 };
 
@@ -85,12 +82,13 @@ export async function GET(req: Request) {
     // 2. Extract the 'query' parameter
     const query = searchParams.get('query');
 
+    // Checks if the user forgot to type a query.
     if (!query || query.trim().length === 0) {
       // Respond with a structured error
       return Response.json({ error: 'Missing search query.' }, { status: 400 });
     }
 
-    // Call the core logic
+    // Call the core logic to actually fact-check the query using Gemini
     const result: FactCheckResult = await fetchFactCheckData(query);
     
     // Return the result
