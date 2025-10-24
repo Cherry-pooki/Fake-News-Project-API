@@ -200,7 +200,7 @@ export default function FactCheckPage() {
         <div className="flex space-x-3">
           <input
             type="text"
-            placeholder="Paste Headline or URL here."
+            placeholder="Paste headline here."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') handleFactCheck(); }}
