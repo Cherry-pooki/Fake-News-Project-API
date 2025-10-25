@@ -66,8 +66,9 @@ Follow these steps to run **TrustMe** locally:
 
 ### 1. Clone the Project
 ```bash
-git clone https://github.com/your-username/trustme.git
-cd trustme
+git clone https://github.com/Cherry-pooki/Fake-News-Project-API.git
+cd Fake-News-Project-API
+cd trustme-app
 ```
 
 ### 2. Install Dependencies
